@@ -1,6 +1,7 @@
 # Analysis of the temperature and luminosity gathered by the datalogers HOBO 
 
-In this script I try to analyse the data gathered by the datalogers. I have several datalogers distributed throughout the Portuguese litoral, on places with a great invasion by Acacia longifolia, and where the biocontrol agent Trichilogaster acaciaelongifoliae was released. The objective of this script is to shed light to the question: Are there a increasing of luminosity and temperature inside the Acacia stand (ruled by the defoliation effect of the biocontrol agent) ?
+With this script I try to analyse the data gathered by the datalogers. I have several datalogers distributed throughout the Portuguese litoral, on places with a great invasion by Acacia longifolia, and where the biocontrol agent Trichilogaster acaciaelongifoliae was released. The objective of this script is to evaluate the question: Are there a increasing of luminosity and temperature inside the Acacia stand (ruled by the defoliation effect of the biocontrol agent) ?
+Of course, after the recent release of this biocontrol agent, it is not expectable a huge effect on the canopy density, but it is mandatory check the data to allow us the management of the current dataloggers and the eventually place of new dataloggers
 
 ## IMPORTANT REMARKS
 When data is gathered from dataloggers, the exportation of the parsed file must follow the next rules (check in HOBOware preferences):
