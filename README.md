@@ -23,9 +23,10 @@ For each place I will check the values of temperature and luminosity to detect o
 For temperature I replaced the values above 50ºC to NAN values. I have done that, because I discarded the NAN values to estimate the mean temperature by month, but I did not discard the daily associated values of light. Nevertheless, this replacement need to be more accurated, also considering potential light outliers
 
 3º ANALYSIS OF THE DATA
-I have done a preliminary analysis of the São Jacinto data, and I obtained some results. By one hand, as expected, the temperature (in average) apparently increases throughout the time; but on the other hand, an unexpected decrease on light have been happened. I am not sure why. Probably, It could be explained by:
-           a) The position of the datalogger varied during the years?
-           b) When I estimated the mean, I considered the night values of luminosity (0 lux), so, perhaps, this values could be responsible for this trend... In next tests I will    consider for de mean only values above 0 lux (only daylight period).
+I have done a preliminary analysis of the São Jacinto data, and I obtained some results. By one hand, as expected, the temperature (in average) apparently increases throughout the time; but on the other hand, an unexpected decrease on light have been happened. I am not sure why. Probably, It could be explained by:       
+
+(a) The position of the datalogger varied during the year           
+(b) When I estimated the mean, I considered the night values of luminosity (0 lux), so, perhaps, this values could be responsible for this trend... In next tests I will    consider for de mean only values above 0 lux (only daylight period).
 
 4º SAVING THE FINAL FILE      
 I will save a final file with the all data for each site. This file will be frequently updated with new data from the field.
