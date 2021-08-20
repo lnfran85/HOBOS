@@ -36,9 +36,13 @@ all_data$file <- sub(".csv", "", all_data$file, fixed=TRUE)
 # drop rows with missing data
 all_data <- na.omit(all_data)
 
-# parsing dates and time
+# parsing dates and time and spliting dates
 all_data$date <- dmy(all_data$date)
 all_data$time <- hms::as_hms(all_data$time)
+
+all_data$YEAR <- year(all_data$date)
+all_data$MONTH <- month(all_data$date)
+all_data$DAY <- day(all_data$date)
 
 
 # cleaning variables into a new variable with less levels. We must pay attention in this part because some dataloggers were translocated from their place to
@@ -64,20 +68,23 @@ all_data$site <- ifelse(grepl("Quiaios1-",all_data$file),'QUD1',
                                                                                                                                               ifelse(grepl("20415974_",all_data$file),'SJD_JAEL2',
                                                                                                                                                      ifelse(grepl("20415975_",all_data$file),'SJD_JAEL1', #I'm not sure
                                                                                                                                                             ifelse(grepl("SJacinto1-",all_data$file),'SJD1',
-                                                                                                                                                                   ifelse(grepl("SJD2",all_data$file),'SJD2',
-                                                                                                                                                                          ifelse(grepl("SJD2_",all_data$file),'SJD2',
-                                                                                                                                                                                 ifelse(grepl("SJacinto2_",all_data$file),'SJD2',
-                                                                                                                                                                                        ifelse(grepl("SEI1_HOBO",all_data$file),'SEI1',
-                                                                                                                                                                                               ifelse(grepl("SEI2_HOBO",all_data$file),'SEI2',
-                                                                                                                                                                                                      ifelse(grepl("Esposende2-",all_data$file),'ESP2',all_data$file)))))))))))))))))))))))))))
+                                                                                                                                                                   ifelse(grepl("SJD1_",all_data$file),'SJD1',
+                                                                                                                                                                          ifelse(grepl("SJD2",all_data$file),'SJD2',
+                                                                                                                                                                                 ifelse(grepl("SJD2_",all_data$file),'SJD2',
+                                                                                                                                                                                        ifelse(grepl("SJacinto2_",all_data$file),'SJD2',
+                                                                                                                                                                                               ifelse(grepl("SEI1_HOBO",all_data$file),'SEI1',
+                                                                                                                                                                                                      ifelse(grepl("SEI2_HOBO",all_data$file),'SEI2',
+                                                                                                                                                                                                             ifelse(grepl("Esposende2-",all_data$file),'ESP2',all_data$file))))))))))))))))))))))))))))
 
 
 
 
+
+unique(all_data$site)
+all_data$site <- as.factor(all_data$site)
 
 
 # adding two variables with the geographic coordinates of each HOBO
-
 all_data$lat <- ifelse(grepl("QUD1",all_data$site),40.2241592,
                        ifelse(grepl("QUD2",all_data$site),40.22625410606060115,
                               ifelse(grepl("SBV1",all_data$site),40.20061062278523423,
@@ -126,9 +133,9 @@ all_data$lon <- ifelse(grepl("QUD1",all_data$site), -8.8887518,
 all_data$lat <- as.numeric(all_data$lat)
 all_data$lon <- as.numeric(all_data$lon)
 
+
 # adding a variable informing about the working status of the HOBO. 
 # value 1 -> working, 0 -> not working
-
 all_data$status <- ifelse(grepl("QUD1",all_data$site), 1,
                        ifelse(grepl("QUD2",all_data$site),1,
                               ifelse(grepl("SBV1",all_data$site),0,
@@ -152,39 +159,55 @@ all_data$status <- ifelse(grepl("QUD1",all_data$site), 1,
                                                                                                                                                             ifelse(grepl("SJD2",all_data$site),1,all_data$site)))))))))))))))))))))
 
 all_data$status <- as.factor(all_data$status)
-                                                                 
 
-
-
-
-
-
-
-
-
-
-write.csv2(all_data, paste(out_dir, "temp.csv", sep="/"), row.names=FALSE)
-
-
-# drop date duplicates
+                                                              
+# dropping date duplicates
 all_data <- all_data %>% distinct(DATE, site, .keep_all = TRUE) 
 
 
-#all_data[, date:=floor_date(mdy_hms(date), "minute")] # floor date to nearest minute
 
-
-
+## ANALYZING THE DATA ----
 
 # filtering by site
 
-sjd2 <- all_data %>%
-        filter(str_detect(file, "10640611"))
+sjd <- all_data %>%
+        filter(str_detect(site, "SJD1") | str_detect(site, "SJD2")) %>%
+        droplevels() %>%
+        #filter(temp < 50) %>% # I want to keep only with temp values <50ºc
+        mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing light values on lines with temp > 50ºC, I replaced all values above 50ºC by NA
+        group_by(YEAR, MONTH, DAY) %>%
+        summarize(TEMP_mean_dayly_x_month = mean(temp1, na.rm=T), # These are the average values of dayly temp and light by each month 
+                  LIGHT_mean_dayly_x_month = mean(light, na.rm = T)) %>%
+        summarize(TEMP_mean_monthy_x_year = mean(TEMP_mean_dayly_x_month, na.rm=T), # These are the average values of monthly temp and light by each year
+                  LIGHT_mean_monthly_x_year = mean(LIGHT_mean_dayly_x_month, na.rm = T)) %>%
+        mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
 
 
-## SAVE PROCESSED DATA ------
-# write data in one big file
+write.csv2(sjd1, "tt.csv")
+
+tt <- subset(sjd1, temp>50)
+
+par(mfrow= c(2,2))
+plot(sjd1$TEMP_mean_monthy_x_year~sjd1$MY)
+plot(sjd1$light~sjd1$date)
+plot(sjd2$temp~sjd2$date)
+plot(sjd2$light~sjd2$date)
+
+library(ggplot2)
+p <- ggplot(data = sjd, aes(x = MY, y = TEMP_mean_monthy_x_year)) +
+  geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
+  geom_point()
+p <- ggplot(data = sjd, aes(x = MY, y = LIGHT_mean_monthly_x_year)) +
+  geom_smooth(method = "lm", se=TRUE, color="black", formula = y ~ x) +
+  geom_point()
+p
+
+## SAVING PROCESSED DATA ------
+# writting data in one big file
 write.csv(all_data, paste(out_dir, "all_data.csv", sep="/"), 
-          row.names=FALSE)
+          row.names=FALSE) # this file is still uncleaned for outliers! be carefull and clean it before analyze it
+
+# exporting plots
 
 
 
@@ -192,3 +215,5 @@ write.csv(all_data, paste(out_dir, "all_data.csv", sep="/"),
 
 # drop rows with missing data
 #all_data <- all_data[complete.cases(all_data),]
+
+#all_data[, date:=floor_date(mdy_hms(date), "minute")] # floor date to nearest minute
