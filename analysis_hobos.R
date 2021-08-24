@@ -11,9 +11,9 @@ library(ggplot2)
 
 ## PROCESSING AND CLEANING RAW DATA
 
-out_dir <- ("C:\\Users\\LENOVO\\Desktop\\Nova pasta (2)\\")
-files <- list.files("C:\\Users\\LENOVO\\Desktop\\Nova pasta (2)\\", pattern=".csv", full.names=T)
-names.files <- list.files("C:\\Users\\LENOVO\\Desktop\\Nova pasta (2)\\", pattern=".csv")
+out_dir <- ("C:\\Users\\LENOVO\\Google Drive\\Databases\\Hobos_data\\HOBOS\\")
+files <- list.files("C:\\Users\\LENOVO\\Google Drive\\Databases\\Hobos_data\\", pattern=".csv", full.names=T)
+names.files <- list.files("C:\\Users\\LENOVO\\Google Drive\\Databases\\Hobos_data\\", pattern=".csv")
 
 
 all_data <- lapply(files, fread,select=c(1:5), header = FALSE, skip=1, encoding = "UTF-8", dec=".")
@@ -174,8 +174,8 @@ all_data <- all_data %>% distinct(DATE, site, .keep_all = TRUE)
 sjd <- all_data %>%
         filter(str_detect(site, "SJD1") | str_detect(site, "SJD2")) %>%
         droplevels() %>%
-        #filter(temp < 50) %>% # I want to keep only with temp values <50ºc
-        mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50ºC, I replaced all values above 50ºC by NA
+        #filter(temp < 50) %>% # I want to keep only with temp values <50?c
+        mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
         mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
         group_by(YEAR, MONTH, DAY) %>%
         summarize(TEMP_mean_dayly_x_month = mean(temp1, na.rm=T), # These are the average values of dayly temp and light by each month 
@@ -183,6 +183,7 @@ sjd <- all_data %>%
         summarize(TEMP_mean_monthy_x_year = mean(TEMP_mean_dayly_x_month, na.rm=T), # These are the average values of monthly temp and light by each year
                   LIGHT_mean_monthly_x_year = mean(LIGHT_mean_dayly_x_month, na.rm = T)) %>%
         mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
+sjd$site <- rep("sjd", nrow(sjd))
 
 
 qud <- all_data %>%
@@ -195,14 +196,14 @@ qud <- all_data %>%
   summarize(TEMP_mean_monthy_x_year = mean(TEMP_mean_dayly_x_month, na.rm=T), # These are the average values of monthly temp and light by each year
             LIGHT_mean_monthly_x_year = mean(LIGHT_mean_dayly_x_month, na.rm = T)) %>%
   mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
-
+qud$site <- rep("qud", nrow(qud))
 
 
 far <- all_data %>%
   filter(str_detect(site, "FAR1") | str_detect(site, "FAR2")) %>%
   droplevels() %>%
-  #filter(temp < 50) %>% # I want to keep only with temp values <50ºc
-  mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50ºC, I replaced all values above 50ºC by NA
+  #filter(temp < 50) %>% # I want to keep only with temp values <50?c
+  mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
   mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
   group_by(YEAR, MONTH, DAY) %>%
   summarize(TEMP_mean_dayly_x_month = mean(temp1, na.rm=T), # These are the average values of dayly temp and light by each month 
@@ -210,13 +211,13 @@ far <- all_data %>%
   summarize(TEMP_mean_monthy_x_year = mean(TEMP_mean_dayly_x_month, na.rm=T), # These are the average values of monthly temp and light by each year
             LIGHT_mean_monthly_x_year = mean(LIGHT_mean_dayly_x_month, na.rm = T)) %>%
   mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
-
+far$site <- rep("far", nrow(far))
 
 lsa <- all_data %>%
   filter(str_detect(site, "LSA1") | str_detect(site, "LSA2")) %>%
   droplevels() %>%
-  #filter(temp < 50) %>% # I want to keep only with temp values <50ºc
-  #mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50ºC, I replaced all values above 50ºC by NA
+  #filter(temp < 50) %>% # I want to keep only with temp values <50?c
+  #mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
   mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
   group_by(YEAR, MONTH, DAY) %>%
   summarize(TEMP_mean_dayly_x_month = mean(temp, na.rm=T), # These are the average values of dayly temp and light by each month 
@@ -224,13 +225,13 @@ lsa <- all_data %>%
   summarize(TEMP_mean_monthy_x_year = mean(TEMP_mean_dayly_x_month, na.rm=T), # These are the average values of monthly temp and light by each year
             LIGHT_mean_monthly_x_year = mean(LIGHT_mean_dayly_x_month, na.rm = T)) %>%
   mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
-
+lsa$site <- rep("lsa", nrow(lsa))
 
 sei <- all_data %>%
   filter(str_detect(site, "SEI1") | str_detect(site, "SEI2")) %>%
   droplevels() %>%
-  filter(temp < 50) %>% # I want to keep only with temp values <50ºc
-  mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50ºC, I replaced all values above 50ºC by NA
+  filter(temp < 50) %>% # I want to keep only with temp values <50?c
+  mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
   mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
   group_by(YEAR, MONTH, DAY) %>%
   summarize(TEMP_mean_dayly_x_month = mean(temp1, na.rm=T), # These are the average values of dayly temp and light by each month 
@@ -238,7 +239,7 @@ sei <- all_data %>%
   summarize(TEMP_mean_monthy_x_year = mean(TEMP_mean_dayly_x_month, na.rm=T), # These are the average values of monthly temp and light by each year
             LIGHT_mean_monthly_x_year = mean(LIGHT_mean_dayly_x_month, na.rm = T)) %>%
   mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
-
+sei$site <- rep("sei", nrow(sei))
 
 # plotting data
 
@@ -301,7 +302,9 @@ sei_light
 
 ## SAVING PROCESSED DATA ------
 # writting data in one big file
-write.csv(all_data, paste(out_dir, "all_data.csv", sep="/"), 
+
+all_data1 <- rbind(sjd,qud,far,lsa,sei)
+write.csv(all_data1, paste(out_dir, "all_data.csv", sep="/"), 
           row.names=FALSE) # this file is still uncleaned for outliers! be carefull and clean it before analyze it
 
 # exporting plots
