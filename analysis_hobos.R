@@ -263,18 +263,125 @@ lightplot
 
 
 
+# daily temperature range trends
+# filtering by site
+sjd <- all_data %>%
+  filter(str_detect(site, "SJD1") | str_detect(site, "SJD2")) %>%
+  droplevels() %>%
+  #filter(temp < 50) %>% # I want to keep only with temp values <50?c
+  mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
+  mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
+  na.omit() %>%
+  group_by(YEAR, MONTH, DAY) %>%
+  summarize(min_temp = min(temp1),max_temp = max(temp1), # These are the average values of dayly temp and light by each month 
+            min_light = min(light1), max_light =max(light1)) %>%
+  mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH))) %>%
+  mutate(range_temp = max_temp-min_temp, range_light = max_light-min_light)
+sjd$site <- rep("sjd", nrow(sjd))
+
+
+qud <- all_data %>%
+  filter(str_detect(site, "QUD1") | str_detect(site, "QUD2")) %>%
+  droplevels() %>%
+  mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
+  na.omit() %>%
+  group_by(YEAR, MONTH, DAY) %>%
+  summarize(min_temp = min(temp),max_temp = max(temp), # These are the average values of dayly temp and light by each month 
+            min_light = min(light1), max_light =max(light1)) %>%
+  mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH))) %>%
+  mutate(range_temp = max_temp-min_temp, range_light = max_light-min_light)
+qud$site <- rep("qud", nrow(qud))
+
+
+far <- all_data %>%
+  filter(str_detect(site, "FAR1") | str_detect(site, "FAR2")) %>%
+  droplevels() %>%
+  #filter(temp < 50) %>% # I want to keep only with temp values <50?c
+  mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
+  mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
+  na.omit() %>%
+  group_by(YEAR, MONTH, DAY) %>%
+  summarize(min_temp = min(temp1),max_temp = max(temp1), # These are the average values of dayly temp and light by each month 
+            min_light = min(light1), max_light =max(light1)) %>%
+  mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH))) %>%
+  mutate(range_temp = max_temp-min_temp, range_light = max_light-min_light)
+far$site <- rep("far", nrow(far))
+
+lsa <- all_data %>%
+  filter(str_detect(site, "LSA1") | str_detect(site, "LSA2")) %>%
+  droplevels() %>%
+  #filter(temp < 50) %>% # I want to keep only with temp values <50?c
+  #mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
+  mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
+  na.omit() %>%
+  group_by(YEAR, MONTH, DAY) %>%
+  summarize(min_temp = min(temp),max_temp = max(temp), # These are the average values of dayly temp and light by each month 
+            min_light = min(light1), max_light =max(light1)) %>%
+  mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH))) %>%
+  mutate(range_temp = max_temp-min_temp, range_light = max_light-min_light)
+lsa$site <- rep("lsa", nrow(lsa))
+
+sei <- all_data %>%
+  filter(str_detect(site, "SEI1") | str_detect(site, "SEI2")) %>%
+  droplevels() %>%
+  filter(temp < 50) %>% # I want to keep only with temp values <50?c
+  mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
+  mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
+  na.omit() %>%
+  group_by(YEAR, MONTH, DAY) %>%
+  summarize(min_temp = min(temp1),max_temp = max(temp1), # These are the average values of dayly temp and light by each month 
+            min_light = min(light1), max_light =max(light1)) %>%
+  mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH))) %>%
+  mutate(range_temp = max_temp-min_temp, range_light = max_light-min_light)
+sei$site <- rep("sei", nrow(sei))
+
+
+all_data2 <- rbind(sjd,qud,far,lsa,sei)
+all_data2 <- na.omit(all_data2)
+
+# plotting data
+tempplot1 <- ggplot(all_data2, aes(x=MY, y=range_temp))+
+  #geom_point(aes(col=site,fill=site))+
+  geom_smooth(aes(colour=site))+
+  scale_x_date(date_breaks= "1 year", date_labels = "%Y")+
+  scale_y_continuous(breaks=seq(round(min(all_data2$range_temp)),round(max(all_data2$range_temp))))+
+  theme_light()+
+  #theme(legend.title = element_blank(),legend.position = "none")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  labs(title= "Daily temperature range", y="Mean daily temperature range (°C) with 95% CI", x="Date", col="Site", fill="Site")
+tempplot1
+
+lightplot1 <- ggplot(all_data2, aes(x=MY, y=range_light))+
+  #geom_point(aes(col=site,fill=site))+
+  geom_smooth(aes(colour=site))+
+  scale_x_date(date_breaks= "1 year", date_labels = "%Y")+
+  scale_y_continuous(breaks=seq(0,round(max(all_data2$range_light)),20000))+
+  #scale_color_manual(labels = c("Faro", "Santo André","Quiaios","Seixo","São Jacinto"))+
+  theme_light()+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  labs(title= "Daily sunlight range", y="Mean daily sunlight range (lux) with 95% CI", x="Date", col="Site", fill="Site")
+lightplot1
+
+
+
 
 ## SAVING PROCESSED DATA ------
 # writting data in one big file
 
 write.csv(all_data1, paste(out_dir, "monthly_means_data.csv", sep="/"), 
           row.names=FALSE) # this file is still uncleaned for outliers! be carefull and clean it before analyze it
+write.csv(all_data2, paste(out_dir, "daily_range_data.csv", sep="/"), 
+          row.names=FALSE) # this file is still uncleaned for outliers! be carefull and clean it before analyze it
+
 
 # exporting plots
 png("monthly_trends.png", width = 800, height = 800)
 plot_grid(tempplot, lightplot, labels = c('A', 'B'), label_size = 12, nrow=2)
 dev.off()
 
+png("daily_range_trends.png", width = 800, height = 800)
+plot_grid(tempplot1, lightplot1, labels = c('A', 'B'), label_size = 12, nrow=2)
+dev.off()
 
 
 
