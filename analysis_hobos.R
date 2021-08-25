@@ -3,6 +3,8 @@ library(lubridate)
 library(dplyr)
 library(stringr)
 library(ggplot2)
+library(ggthemes)
+library(cowplot)
 
 ## Change .txt extension to .csv from the CMD 
 
@@ -169,20 +171,19 @@ all_data <- all_data %>% distinct(DATE, site, .keep_all = TRUE)
 
 ## ANALYZING THE DATA ----
 
-# filtering by site
 
+# monthly trends
+# filtering by site
 sjd <- all_data %>%
-        filter(str_detect(site, "SJD1") | str_detect(site, "SJD2")) %>%
-        droplevels() %>%
-        #filter(temp < 50) %>% # I want to keep only with temp values <50?c
-        mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
-        mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
-        group_by(YEAR, MONTH, DAY) %>%
-        summarize(TEMP_mean_dayly_x_month = mean(temp1, na.rm=T), # These are the average values of dayly temp and light by each month 
-                  LIGHT_mean_dayly_x_month = mean(light1, na.rm = T)) %>%
-        summarize(TEMP_mean_monthy_x_year = mean(TEMP_mean_dayly_x_month, na.rm=T), # These are the average values of monthly temp and light by each year
-                  LIGHT_mean_monthly_x_year = mean(LIGHT_mean_dayly_x_month, na.rm = T)) %>%
-        mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
+  filter(str_detect(site, "SJD1") | str_detect(site, "SJD2")) %>%
+  droplevels() %>%
+  #filter(temp < 50) %>% # I want to keep only with temp values <50?c
+  mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
+  mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
+  group_by(YEAR, MONTH) %>%
+  summarize(TEMP_mean_dayly_x_month = mean(temp1, na.rm=T), # These are the average values of dayly temp and light by each month 
+            LIGHT_mean_dayly_x_month = mean(light1, na.rm = T)) %>%
+  mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
 sjd$site <- rep("sjd", nrow(sjd))
 
 
@@ -190,11 +191,9 @@ qud <- all_data %>%
   filter(str_detect(site, "QUD1") | str_detect(site, "QUD2")) %>%
   droplevels() %>%
   mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
-  group_by(YEAR, MONTH, DAY) %>%
+  group_by(YEAR, MONTH) %>%
   summarize(TEMP_mean_dayly_x_month = mean(temp, na.rm=T), # These are the average values of dayly temp and light by each month 
             LIGHT_mean_dayly_x_month = mean(light1, na.rm = T)) %>%
-  summarize(TEMP_mean_monthy_x_year = mean(TEMP_mean_dayly_x_month, na.rm=T), # These are the average values of monthly temp and light by each year
-            LIGHT_mean_monthly_x_year = mean(LIGHT_mean_dayly_x_month, na.rm = T)) %>%
   mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
 qud$site <- rep("qud", nrow(qud))
 
@@ -205,11 +204,9 @@ far <- all_data %>%
   #filter(temp < 50) %>% # I want to keep only with temp values <50?c
   mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
   mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
-  group_by(YEAR, MONTH, DAY) %>%
+  group_by(YEAR, MONTH) %>%
   summarize(TEMP_mean_dayly_x_month = mean(temp1, na.rm=T), # These are the average values of dayly temp and light by each month 
             LIGHT_mean_dayly_x_month = mean(light1, na.rm = T)) %>%
-  summarize(TEMP_mean_monthy_x_year = mean(TEMP_mean_dayly_x_month, na.rm=T), # These are the average values of monthly temp and light by each year
-            LIGHT_mean_monthly_x_year = mean(LIGHT_mean_dayly_x_month, na.rm = T)) %>%
   mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
 far$site <- rep("far", nrow(far))
 
@@ -219,11 +216,9 @@ lsa <- all_data %>%
   #filter(temp < 50) %>% # I want to keep only with temp values <50?c
   #mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
   mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
-  group_by(YEAR, MONTH, DAY) %>%
+  group_by(YEAR, MONTH) %>%
   summarize(TEMP_mean_dayly_x_month = mean(temp, na.rm=T), # These are the average values of dayly temp and light by each month 
             LIGHT_mean_dayly_x_month = mean(light1, na.rm = T)) %>%
-  summarize(TEMP_mean_monthy_x_year = mean(TEMP_mean_dayly_x_month, na.rm=T), # These are the average values of monthly temp and light by each year
-            LIGHT_mean_monthly_x_year = mean(LIGHT_mean_dayly_x_month, na.rm = T)) %>%
   mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
 lsa$site <- rep("lsa", nrow(lsa))
 
@@ -233,81 +228,52 @@ sei <- all_data %>%
   filter(temp < 50) %>% # I want to keep only with temp values <50?c
   mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
   mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
-  group_by(YEAR, MONTH, DAY) %>%
+  group_by(YEAR, MONTH) %>%
   summarize(TEMP_mean_dayly_x_month = mean(temp1, na.rm=T), # These are the average values of dayly temp and light by each month 
             LIGHT_mean_dayly_x_month = mean(light1, na.rm = T)) %>%
-  summarize(TEMP_mean_monthy_x_year = mean(TEMP_mean_dayly_x_month, na.rm=T), # These are the average values of monthly temp and light by each year
-            LIGHT_mean_monthly_x_year = mean(LIGHT_mean_dayly_x_month, na.rm = T)) %>%
   mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
 sei$site <- rep("sei", nrow(sei))
 
+
+all_data1 <- rbind(sjd,qud,far,lsa,sei)
+
+
 # plotting data
+tempplot <- ggplot(all_data1, aes(x=MY, y=TEMP_mean_dayly_x_month))+
+  geom_point(aes(col=site,fill=site))+
+  geom_smooth(aes(colour=site))+
+  scale_x_date(date_breaks= "1 year", date_labels = "%Y")+
+  scale_y_continuous(breaks=seq(round(min(all_data1$TEMP_mean_dayly_x_month)),round(max(all_data1$TEMP_mean_dayly_x_month))))+
+  theme_light()+
+  #theme(legend.title = element_blank(),legend.position = "none")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  labs(title= "Monthly temperature means", y="Monthly mean temperature (°C) with 95% CI", x="Date", col="Site", fill="Site")
+tempplot
 
-sjd_temp <- ggplot(data = sjd, aes(x = MY, y = TEMP_mean_monthy_x_year)) +
-  geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
-  geom_point()
-sjd_light <- ggplot(data = sjd, aes(x = MY, y = LIGHT_mean_monthly_x_year)) +
-  geom_smooth(method = "lm", se=TRUE, color="black", formula = y ~ x) +
-  geom_point()
-
-
-qud_temp <- ggplot(data = qud, aes(x = MY, y = TEMP_mean_monthy_x_year)) +
-  geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
-  geom_point()
-qud_light <- ggplot(data = qud, aes(x = MY, y = LIGHT_mean_monthly_x_year)) +
-  geom_smooth(method = "lm", se=TRUE, color="black", formula = y ~ x) +
-  geom_point()
-
-
-far_temp <- ggplot(data = far, aes(x = MY, y = TEMP_mean_monthy_x_year)) +
-  geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
-  geom_point()
-far_light <- ggplot(data = far, aes(x = MY, y = LIGHT_mean_monthly_x_year)) +
-  geom_smooth(method = "lm", se=TRUE, color="black", formula = y ~ x) +
-  geom_point()
+lightplot <- ggplot(all_data1, aes(x=MY, y=LIGHT_mean_dayly_x_month))+
+  geom_point(aes(col=site,fill=site))+
+  geom_smooth(aes(colour=site))+
+  scale_x_date(date_breaks= "1 year", date_labels = "%Y")+
+  scale_y_continuous(breaks=seq(0,round(max(all_data1$LIGHT_mean_dayly_x_month)),5000))+
+  #scale_color_manual(labels = c("Faro", "Santo André","Quiaios","Seixo","São Jacinto"))+
+  theme_light()+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  labs(title= "Monthly sunlight means", y="Monthly mean sunlight (lux) with 95% CI", x="Date", col="Site", fill="Site")
+lightplot
 
 
-lsa_temp <- ggplot(data = lsa, aes(x = MY, y = TEMP_mean_monthy_x_year)) +
-  geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
-  geom_point()
-lsa_light <- ggplot(data = lsa, aes(x = MY, y = LIGHT_mean_monthly_x_year)) +
-  geom_smooth(method = "lm", se=TRUE, color="black", formula = y ~ x) +
-  geom_point()
-
-
-sei_temp <- ggplot(data = sei, aes(x = MY, y = TEMP_mean_monthy_x_year)) +
-  geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
-  geom_point()
-sei_light <- ggplot(data = sei, aes(x = MY, y = LIGHT_mean_monthly_x_year)) +
-  geom_smooth(method = "lm", se=TRUE, color="black", formula = y ~ x) +
-  geom_point()
-
-
-
-sjd_temp
-sjd_light
-
-qud_temp
-qud_light
-
-far_temp
-far_light
-
-lsa_temp
-lsa_light
-
-sei_temp
-sei_light
 
 
 ## SAVING PROCESSED DATA ------
 # writting data in one big file
 
-all_data1 <- rbind(sjd,qud,far,lsa,sei)
-write.csv(all_data1, paste(out_dir, "all_data.csv", sep="/"), 
+write.csv(all_data1, paste(out_dir, "monthly_means_data.csv", sep="/"), 
           row.names=FALSE) # this file is still uncleaned for outliers! be carefull and clean it before analyze it
 
 # exporting plots
+png("monthly_trends.png", width = 800, height = 800)
+plot_grid(tempplot, lightplot, labels = c('A', 'B'), label_size = 12, nrow=2)
+dev.off()
 
 
 
@@ -317,3 +283,9 @@ write.csv(all_data1, paste(out_dir, "all_data.csv", sep="/"),
 #all_data <- all_data[complete.cases(all_data),]
 
 #all_data[, date:=floor_date(mdy_hms(date), "minute")] # floor date to nearest minute
+
+
+
+
+
+
