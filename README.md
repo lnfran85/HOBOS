@@ -34,4 +34,4 @@ I will save a final file with the all data for each site. This file will be freq
 
 MONTHLY TRENDS 
 
-![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+![alt text](https://github.com/lnfran85/HOBOS/blob/54963425d04f2ea3cb556583e265273e7ee30b90/monthly_trends.png "Logo Title Text 1")
