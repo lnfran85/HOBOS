@@ -34,3 +34,6 @@ I have done a preliminary analysis of the São Jacinto data, and I obtained some
 This figure shows the monthly mean of temperature and luminosity for each site. Apparently, the temperature decreased in all sites except for São Jacinto. For luminosity, the pattern is more variable, decreasing from the first years (performance-dependence of the datalogger?); only during the last years we can begin appreciate an apparently increasing in São Jacinto and Seixo, while the rest of sites follow a decreasing trend of luminosity.         
 
 ![alt text](https://github.com/lnfran85/HOBOS/blob/54963425d04f2ea3cb556583e265273e7ee30b90/monthly_trends.png "Monthly trends")
+
+**DAILY RANGE**       
+![alt text](https://github.com/lnfran85/HOBOS/blob/307c70e96e16303ea7a05ae3a861353049c523d2/daily_range_trends.png "Daily ranges")
