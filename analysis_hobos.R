@@ -86,6 +86,32 @@ all_data$site <- ifelse(grepl("Quiaios1-",all_data$file),'QUD1',
 unique(all_data$site)
 all_data$site <- as.factor(all_data$site)
 
+all_data$site_merged <- ifelse(grepl("QUD1",all_data$site),'QUD',
+                        ifelse(grepl("QUD2",all_data$site),'QUD',
+                               ifelse(grepl("FAR1",all_data$site),'FAR',
+                                      ifelse(grepl("FAR2",all_data$site),'FAR',
+                                             ifelse(grepl("LSA1",all_data$site),'LSA',
+                                                    ifelse(grepl("LSA2",all_data$site),'LSA',
+                                                           ifelse(grepl("SBV1",all_data$site),'SBV',
+                                                                  ifelse(grepl("SBV2",all_data$site),'SBV',
+                                                                         ifelse(grepl("SEI1",all_data$site),'SEI',
+                                                                                ifelse(grepl("SEI2",all_data$site),'SEI',
+                                                                                       ifelse(grepl("SJD1",all_data$site),'SJD',
+                                                                                              ifelse(grepl("SJD2",all_data$site),'SJD',
+                                                                                                     ifelse(grepl("SPM1",all_data$site),'SPM',
+                                                                                                            ifelse(grepl("SPM2",all_data$site),'SPM',
+                                                                                                                   ifelse(grepl("TOC1",all_data$site),'TOC',
+                                                                                                                          ifelse(grepl("TOC2",all_data$site),'TOC',
+                                                                                                                                 ifelse(grepl("SJD_JAEL2",all_data$site),'SJD_JAEL2',
+                                                                                                                                        ifelse(grepl("SJD_JAEL1",all_data$site),'SJD_JAEL1',
+                                                                                                                                               ifelse(grepl("ESP",all_data$site),'ESP',
+                                                                                                                                                      ifelse(grepl("ESAC_Frigo",all_data$site),'ESAC_Frigo',
+                                                                                                                                                             ifelse(grepl("ESAC_Teste",all_data$site),'ESAC_Teste',all_data$site)))))))))))))))))))))
+
+unique(all_data$site_merged)
+all_data$site_merged <- as.factor(all_data$site_merged)
+
+
 
 # adding two variables with the geographic coordinates of each HOBO
 all_data$lat <- ifelse(grepl("QUD1",all_data$site),40.2241592,
@@ -170,91 +196,50 @@ all_data <- all_data %>% distinct(DATE, site, .keep_all = TRUE)
 
 
 ## ANALYZING THE DATA ----
-
-
-# monthly trends
-# filtering by site
-sjd <- all_data %>%
-  filter(str_detect(site, "SJD1") | str_detect(site, "SJD2")) %>%
+## + Averages ---- 
+# ++ daily means ----
+daily_means <- all_data %>%
+  filter(str_detect(site_merged, "SJD$") 
+         | str_detect(site_merged, "SEI") 
+         | str_detect(site_merged, "QUD") 
+         | str_detect(site_merged, "LSA") 
+         | str_detect(site_merged, "FAR")) %>%
+  #droplevels() %>%
+  #filter(site_merged != "SJD_") %>%
   droplevels() %>%
-  #filter(temp < 50) %>% # I want to keep only with temp values <50?c
   mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
-  mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
-  group_by(YEAR, MONTH) %>%
-  summarize(TEMP_mean_dayly_x_month = mean(temp1, na.rm=T), # These are the average values of dayly temp and light by each month 
-            LIGHT_mean_dayly_x_month = mean(light1, na.rm = T)) %>%
+  mutate(light1 =replace(light, light<=0, NA)) %>%
+  group_by(YEAR, MONTH, DAY, site_merged) %>%
+  summarise(meantemp = mean(temp1, na.rm = T),
+            meanlight = mean(light1, na.rm = T))%>%
   mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
-sjd$site <- rep("sjd", nrow(sjd))
 
-
-qud <- all_data %>%
-  filter(str_detect(site, "QUD1") | str_detect(site, "QUD2")) %>%
-  droplevels() %>%
-  mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
-  group_by(YEAR, MONTH) %>%
-  summarize(TEMP_mean_dayly_x_month = mean(temp, na.rm=T), # These are the average values of dayly temp and light by each month 
-            LIGHT_mean_dayly_x_month = mean(light1, na.rm = T)) %>%
+# ++ monthly means ----
+monthly_means <- daily_means %>%
+  group_by(YEAR, MONTH, site_merged) %>%
+  summarise(mean_month_temp = mean(meantemp, na.rm = T),
+            mean_month_light = mean(meanlight, na.rm = T))%>%
   mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
-qud$site <- rep("qud", nrow(qud))
 
-
-far <- all_data %>%
-  filter(str_detect(site, "FAR1") | str_detect(site, "FAR2")) %>%
-  droplevels() %>%
-  #filter(temp < 50) %>% # I want to keep only with temp values <50?c
-  mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
-  mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
-  group_by(YEAR, MONTH) %>%
-  summarize(TEMP_mean_dayly_x_month = mean(temp1, na.rm=T), # These are the average values of dayly temp and light by each month 
-            LIGHT_mean_dayly_x_month = mean(light1, na.rm = T)) %>%
-  mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
-far$site <- rep("far", nrow(far))
-
-lsa <- all_data %>%
-  filter(str_detect(site, "LSA1") | str_detect(site, "LSA2")) %>%
-  droplevels() %>%
-  #filter(temp < 50) %>% # I want to keep only with temp values <50?c
-  #mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
-  mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
-  group_by(YEAR, MONTH) %>%
-  summarize(TEMP_mean_dayly_x_month = mean(temp, na.rm=T), # These are the average values of dayly temp and light by each month 
-            LIGHT_mean_dayly_x_month = mean(light1, na.rm = T)) %>%
-  mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
-lsa$site <- rep("lsa", nrow(lsa))
-
-sei <- all_data %>%
-  filter(str_detect(site, "SEI1") | str_detect(site, "SEI2")) %>%
-  droplevels() %>%
-  filter(temp < 50) %>% # I want to keep only with temp values <50?c
-  mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
-  mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
-  group_by(YEAR, MONTH) %>%
-  summarize(TEMP_mean_dayly_x_month = mean(temp1, na.rm=T), # These are the average values of dayly temp and light by each month 
-            LIGHT_mean_dayly_x_month = mean(light1, na.rm = T)) %>%
-  mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
-sei$site <- rep("sei", nrow(sei))
-
-
-all_data1 <- rbind(sjd,qud,far,lsa,sei)
 
 
 # plotting data
-tempplot <- ggplot(all_data1, aes(x=MY, y=TEMP_mean_dayly_x_month))+
-  geom_point(aes(col=site,fill=site))+
-  geom_smooth(aes(colour=site))+
+tempplot <- ggplot(monthly_means, aes(x=MY, y=mean_month_temp))+
+  geom_point(aes(col=site_merged,fill=site_merged))+
+  geom_smooth(aes(colour=site_merged))+
   scale_x_date(date_breaks= "1 year", date_labels = "%Y")+
-  scale_y_continuous(breaks=seq(round(min(all_data1$TEMP_mean_dayly_x_month)),round(max(all_data1$TEMP_mean_dayly_x_month))))+
+  scale_y_continuous(breaks=seq(round(min(monthly_means$mean_month_temp)),round(max(monthly_means$mean_month_temp))))+
   theme_light()+
   #theme(legend.title = element_blank(),legend.position = "none")+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
   labs(title= "Monthly temperature means", y="Monthly mean temperature (°C) with 95% CI", x="Date", col="Site", fill="Site")
 tempplot
 
-lightplot <- ggplot(all_data1, aes(x=MY, y=LIGHT_mean_dayly_x_month))+
-  geom_point(aes(col=site,fill=site))+
-  geom_smooth(aes(colour=site))+
+lightplot <- ggplot(monthly_means, aes(x=MY, y=mean_month_light))+
+  geom_point(aes(col=site_merged,fill=site_merged))+
+  geom_smooth(aes(colour=site_merged))+
   scale_x_date(date_breaks= "1 year", date_labels = "%Y")+
-  scale_y_continuous(breaks=seq(0,round(max(all_data1$LIGHT_mean_dayly_x_month)),5000))+
+  scale_y_continuous(breaks=seq(0,round(max(monthly_means$mean_month_light)),5000))+
   #scale_color_manual(labels = c("Faro", "Santo André","Quiaios","Seixo","São Jacinto"))+
   theme_light()+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
@@ -262,100 +247,52 @@ lightplot <- ggplot(all_data1, aes(x=MY, y=LIGHT_mean_dayly_x_month))+
 lightplot
 
 
-
-# daily temperature range trends
-# filtering by site
-sjd <- all_data %>%
-  filter(str_detect(site, "SJD1") | str_detect(site, "SJD2")) %>%
+# + Ranges ----
+# ++ daily ranges ----
+daily_range <- all_data %>%
+  filter(str_detect(site_merged, "SJD$") 
+         | str_detect(site_merged, "SEI") 
+         | str_detect(site_merged, "QUD") 
+         | str_detect(site_merged, "LSA") 
+         | str_detect(site_merged, "FAR")) %>%
+  #droplevels() %>%
+  #filter(site_merged != "SJD_") %>%
   droplevels() %>%
-  #filter(temp < 50) %>% # I want to keep only with temp values <50?c
   mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
-  mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
+  mutate(light1 =replace(light, light<=0, NA)) %>%
   na.omit() %>%
-  group_by(YEAR, MONTH, DAY) %>%
-  summarize(min_temp = min(temp1),max_temp = max(temp1), # These are the average values of dayly temp and light by each month 
-            min_light = min(light1), max_light =max(light1)) %>%
-  mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH))) %>%
-  mutate(range_temp = max_temp-min_temp, range_light = max_light-min_light)
-sjd$site <- rep("sjd", nrow(sjd))
+  group_by(YEAR, MONTH, DAY, site_merged) %>%
+  summarise(min_temp = min(temp1), max_temp = max(temp1),
+            min_light = min(light1), max_light = max(light1))%>%
+  mutate(temp_range = max_temp-min_temp,
+         light_range = max_light-min_light,
+         MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
 
+# ++ average daily ranges per month ----
+monthly_range <- daily_range %>%
+  group_by(YEAR, MONTH, site_merged) %>%
+  summarise(temp_mean_month_range = mean(temp_range, na.rm = T),
+            light_mean_month_range = mean(light_range, na.rm = T))%>%
+  mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))  
 
-qud <- all_data %>%
-  filter(str_detect(site, "QUD1") | str_detect(site, "QUD2")) %>%
-  droplevels() %>%
-  mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
-  na.omit() %>%
-  group_by(YEAR, MONTH, DAY) %>%
-  summarize(min_temp = min(temp),max_temp = max(temp), # These are the average values of dayly temp and light by each month 
-            min_light = min(light1), max_light =max(light1)) %>%
-  mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH))) %>%
-  mutate(range_temp = max_temp-min_temp, range_light = max_light-min_light)
-qud$site <- rep("qud", nrow(qud))
-
-
-far <- all_data %>%
-  filter(str_detect(site, "FAR1") | str_detect(site, "FAR2")) %>%
-  droplevels() %>%
-  #filter(temp < 50) %>% # I want to keep only with temp values <50?c
-  mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
-  mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
-  na.omit() %>%
-  group_by(YEAR, MONTH, DAY) %>%
-  summarize(min_temp = min(temp1),max_temp = max(temp1), # These are the average values of dayly temp and light by each month 
-            min_light = min(light1), max_light =max(light1)) %>%
-  mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH))) %>%
-  mutate(range_temp = max_temp-min_temp, range_light = max_light-min_light)
-far$site <- rep("far", nrow(far))
-
-lsa <- all_data %>%
-  filter(str_detect(site, "LSA1") | str_detect(site, "LSA2")) %>%
-  droplevels() %>%
-  #filter(temp < 50) %>% # I want to keep only with temp values <50?c
-  #mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
-  mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
-  na.omit() %>%
-  group_by(YEAR, MONTH, DAY) %>%
-  summarize(min_temp = min(temp),max_temp = max(temp), # These are the average values of dayly temp and light by each month 
-            min_light = min(light1), max_light =max(light1)) %>%
-  mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH))) %>%
-  mutate(range_temp = max_temp-min_temp, range_light = max_light-min_light)
-lsa$site <- rep("lsa", nrow(lsa))
-
-sei <- all_data %>%
-  filter(str_detect(site, "SEI1") | str_detect(site, "SEI2")) %>%
-  droplevels() %>%
-  filter(temp < 50) %>% # I want to keep only with temp values <50?c
-  mutate(temp1 = replace(temp, temp>50, NA)) %>% # To avoid removing temp values on lines with temp > 50?C, I replaced all values above 50?C by NA
-  mutate(light1 =replace(light, light<=0, NA)) %>% # To avoid use the night light values on mean estimation, I replaced all values equal or below to 0 by NA
-  na.omit() %>%
-  group_by(YEAR, MONTH, DAY) %>%
-  summarize(min_temp = min(temp1),max_temp = max(temp1), # These are the average values of dayly temp and light by each month 
-            min_light = min(light1), max_light =max(light1)) %>%
-  mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH))) %>%
-  mutate(range_temp = max_temp-min_temp, range_light = max_light-min_light)
-sei$site <- rep("sei", nrow(sei))
-
-
-all_data2 <- rbind(sjd,qud,far,lsa,sei)
-all_data2 <- na.omit(all_data2)
 
 # plotting data
-tempplot1 <- ggplot(all_data2, aes(x=MY, y=range_temp))+
+tempplot1 <- ggplot(monthly_range, aes(x=MY, y=temp_mean_month_range))+
   #geom_point(aes(col=site,fill=site))+
-  geom_smooth(aes(colour=site))+
+  geom_smooth(aes(colour=site_merged))+
   scale_x_date(date_breaks= "1 year", date_labels = "%Y")+
-  scale_y_continuous(breaks=seq(round(min(all_data2$range_temp)),round(max(all_data2$range_temp))))+
+  scale_y_continuous(breaks=seq(round(min(monthly_range$temp_mean_month_range)),round(max(monthly_range$temp_mean_month_range))))+
   theme_light()+
   #theme(legend.title = element_blank(),legend.position = "none")+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
   labs(title= "Daily temperature range", y="Mean daily temperature range (°C) with 95% CI", x="Date", col="Site", fill="Site")
 tempplot1
 
-lightplot1 <- ggplot(all_data2, aes(x=MY, y=range_light))+
+lightplot1 <- ggplot(monthly_range, aes(x=MY, y=light_mean_month_range))+
   #geom_point(aes(col=site,fill=site))+
-  geom_smooth(aes(colour=site))+
+  geom_smooth(aes(colour=site_merged))+
   scale_x_date(date_breaks= "1 year", date_labels = "%Y")+
-  scale_y_continuous(breaks=seq(0,round(max(all_data2$range_light)),20000))+
+  scale_y_continuous(breaks=seq(0,round(max(monthly_range$light_mean_month_range)),20000))+
   #scale_color_manual(labels = c("Faro", "Santo André","Quiaios","Seixo","São Jacinto"))+
   theme_light()+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
@@ -363,25 +300,89 @@ lightplot1 <- ggplot(all_data2, aes(x=MY, y=range_light))+
 lightplot1
 
 
+# + Max Min ----
+# ++ average monthly max and min ----
+maxmin_average <- daily_range %>%
+  group_by(YEAR, MONTH, site_merged) %>%
+  summarise(mean_min_temp = mean(min_temp, na.rm = T), mean_max_temp = mean(max_temp, na.rm = T),
+            mean_min_light = mean(min_light, na.rm = T), mean_max_light = mean(max_light, na.rm = T))%>%
+  mutate(MY = lubridate::ym(paste0(YEAR,"/",MONTH)))
+  
+
+# plotting data
+tempplot2 <- ggplot(maxmin_average, aes(x=MY, y=mean_min_temp))+
+  #geom_point(aes(col=site,fill=site))+
+  geom_smooth(aes(colour=site_merged))+
+  scale_x_date(date_breaks= "1 year", date_labels = "%Y")+
+  scale_y_continuous(breaks=seq(round(min(maxmin_average$mean_min_temp)),round(max(maxmin_average$mean_min_temp))))+
+  theme_light()+
+  #theme(legend.title = element_blank(),legend.position = "none")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  labs(title= "Average monthly minimum temperature", y="Mean monthly minimum temperature (°C) with 95% CI", x="Date", col="Site", fill="Site")
+tempplot2
+
+tempplot3 <- ggplot(maxmin_average, aes(x=MY, y=mean_max_temp))+
+  #geom_point(aes(col=site,fill=site))+
+  geom_smooth(aes(colour=site_merged))+
+  scale_x_date(date_breaks= "1 year", date_labels = "%Y")+
+  scale_y_continuous(breaks=seq(round(min(maxmin_average$mean_max_temp)),round(max(maxmin_average$mean_max_temp))))+
+  theme_light()+
+  #theme(legend.title = element_blank(),legend.position = "none")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  labs(title= "Average monthly maximum temperature", y="Mean monthly maximum temperature (°C) with 95% CI", x="Date", col="Site", fill="Site")
+tempplot3
+
+
+
+lightplot2 <- ggplot(maxmin_average, aes(x=MY, y=mean_min_light))+
+  #geom_point(aes(col=site,fill=site))+
+  geom_smooth(aes(colour=site_merged))+
+  scale_x_date(date_breaks= "1 year", date_labels = "%Y")+
+  scale_y_continuous(breaks=seq(0,round(max(maxmin_average$mean_min_light)),100))+
+  #scale_color_manual(labels = c("Faro", "Santo André","Quiaios","Seixo","São Jacinto"))+
+  theme_light()+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  labs(title= "Average monthly minimum sunlight", y="Mean monthly minimum sunlight (lux) with 95% CI", x="Date", col="Site", fill="Site")
+lightplot2
+
+lightplot3 <- ggplot(maxmin_average, aes(x=MY, y=mean_max_light))+
+  #geom_point(aes(col=site,fill=site))+
+  geom_smooth(aes(colour=site_merged))+
+  scale_x_date(date_breaks= "1 year", date_labels = "%Y")+
+  scale_y_continuous(breaks=seq(0,round(max(maxmin_average$mean_max_light)),50000))+
+  #scale_color_manual(labels = c("Faro", "Santo André","Quiaios","Seixo","São Jacinto"))+
+  theme_light()+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  labs(title= "Average monthly maximum sunlight", y="Mean monthly maximum sunlight (lux) with 95% CI", x="Date", col="Site", fill="Site")
+lightplot3
+
+
 
 
 ## SAVING PROCESSED DATA ------
 # writting data in one big file
 
-write.csv(all_data1, paste(out_dir, "monthly_means_data.csv", sep="/"), 
+write.csv(monthly_means, paste(out_dir, "monthly_means_data.csv", sep="/"), 
           row.names=FALSE) # this file is still uncleaned for outliers! be carefull and clean it before analyze it
-write.csv(all_data2, paste(out_dir, "daily_range_data.csv", sep="/"), 
+write.csv(monthly_range, paste(out_dir, "monthly_range_data.csv", sep="/"), 
+          row.names=FALSE) # this file is still uncleaned for outliers! be carefull and clean it before analyze it
+write.csv(maxmin_average, paste(out_dir, "monthly_maxmin_data.csv", sep="/"), 
           row.names=FALSE) # this file is still uncleaned for outliers! be carefull and clean it before analyze it
 
 
 # exporting plots
-png("monthly_trends.png", width = 800, height = 800)
+png("monthly_means.png", width = 800, height = 800)
 plot_grid(tempplot, lightplot, labels = c('A', 'B'), label_size = 12, nrow=2)
 dev.off()
 
-png("daily_range_trends.png", width = 800, height = 800)
+png("monthly_average_daily_range.png", width = 800, height = 800)
 plot_grid(tempplot1, lightplot1, labels = c('A', 'B'), label_size = 12, nrow=2)
 dev.off()
+
+png("monthly_average_maxmin.png", width = 800, height = 800)
+plot_grid(tempplot2,  tempplot3, lightplot2,lightplot3,  labels = c('A', 'B', 'C', 'D'), label_size = 12, nrow=2)
+dev.off()
+
 
 
 
