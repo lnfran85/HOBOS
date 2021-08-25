@@ -30,3 +30,8 @@ I have done a preliminary analysis of the São Jacinto data, and I obtained some
 
 4º SAVING THE FINAL FILE      
 I will save a final file with the all data for each site. This file will be frequently updated with new data from the field.
+
+
+MONTHLY TRENDS 
+
+![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
