@@ -13,7 +13,7 @@ When data is gathered from dataloggers, the exportation of the parsed file must 
  - Include serial number of the datalogger
 
 
-## TO DO
+## DONE
 
 1º CHECK THE FILES  (done)     
 Some HOBOS were translocated between places. It is expectable that (for example) the HOBO located on SJD with the serial number 23456 were moved to SPM, maintaining (or not) the code and adding more information on its label. CHECK TO AVOID crosserrors
@@ -28,10 +28,9 @@ I have done a preliminary analysis of the São Jacinto data, and I obtained some
 (a) The position of the datalogger varied during the year           
 (b) When I estimated the mean, I considered the night values of luminosity (0 lux), so, perhaps, this values could be responsible for this trend... In next tests I will    consider for de mean only values above 0 lux (only daylight period).
 
-4º SAVING THE FINAL FILE      
-I will save a final file with the all data for each site. This file will be frequently updated with new data from the field.
 
 
-MONTHLY TRENDS 
+**MONTHLY TRENDS**            
+This figure shows the monthly mean of temperature and luminosity for each site. Apparently, the temperature decreased in all sites except for São Jacinto. For luminosity, the pattern is more variable, decreasing from the first years (performance-dependence of the datalogger?); only during the last years we can begin appreciate an apparently increasing in São Jacinto and Seixo, while the rest of sites follow a decreasing trend of luminosity.         
 
-![alt text](https://github.com/lnfran85/HOBOS/blob/54963425d04f2ea3cb556583e265273e7ee30b90/monthly_trends.png "Logo Title Text 1")
+![alt text](https://github.com/lnfran85/HOBOS/blob/54963425d04f2ea3cb556583e265273e7ee30b90/monthly_trends.png "Monthly trends")
