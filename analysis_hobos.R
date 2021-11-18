@@ -1,3 +1,6 @@
+# Part of this script was inspired and based on https://rpubs.com/cgb-grupstra/moorea-hobo-20190314
+
+
 library(data.table)
 library(lubridate)
 library(dplyr)
