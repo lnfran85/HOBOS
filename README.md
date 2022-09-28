@@ -30,10 +30,13 @@ I have done a preliminary analysis of the São Jacinto data, and I obtained some
 **MONTHLY AVERAGES**            
 This figure shows the monthly mean of temperature and luminosity for each site. Apparently, the temperature decreased in all sites except for São Jacinto. For luminosity, the pattern is more variable, decreasing from the first years (performance-dependence of the datalogger?); only during the last years we can begin appreciate an apparently increasing in São Jacinto and Seixo, while the rest of sites follow a decreasing trend of luminosity.         
 
-![alt text](https://github.com/lnfran85/HOBOS/blob/785acfcb7aa451bef328d4fdd15ea89174ca427f/monthly_means.png "Monthly trends")
+![alt text](https://github.com/lnfran85/HOBOS/blob/785acfcb7aa451bef328d4fdd15ea89174ca427f/monthly_means.png "Monthly trends")        
+![alt text](https://github.com/lnfran85/HOBOS/blob/785acfcb7aa451bef328d4fdd15ea89174ca427f/monthly_means_28092022.png "Monthly trends")
 
 **MONTHLY RANGES**       
-![alt text](https://github.com/lnfran85/HOBOS/blob/785acfcb7aa451bef328d4fdd15ea89174ca427f/monthly_average_daily_range.png "Monthly ranges")
+![alt text](https://github.com/lnfran85/HOBOS/blob/785acfcb7aa451bef328d4fdd15ea89174ca427f/monthly_average_daily_range.png "Monthly ranges")         
+![alt text](https://github.com/lnfran85/HOBOS/blob/785acfcb7aa451bef328d4fdd15ea89174ca427f/monthly_average_daily_range_28092022.png "Monthly ranges")
 
 **MAX MIN MONTHLY AVERAGES**
-![alt text](https://github.com/lnfran85/HOBOS/blob/785acfcb7aa451bef328d4fdd15ea89174ca427f/monthly_average_maxmin.png "Monthly maxmin averages")
+![alt text](https://github.com/lnfran85/HOBOS/blob/785acfcb7aa451bef328d4fdd15ea89174ca427f/monthly_average_maxmin.png "Monthly maxmin averages")      
+![alt text](https://github.com/lnfran85/HOBOS/blob/785acfcb7aa451bef328d4fdd15ea89174ca427f/monthly_average_maxmin_28092022.png "Monthly maxmin averages")
