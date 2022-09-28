@@ -17,14 +17,14 @@ library(cowplot)
 ## PROCESSING AND CLEANING RAW DATA
 
 out_dir <- ("C:\\Users\\LENOVO\\Google Drive\\Databases\\Hobos_data\\HOBOS\\")
-files <- list.files("C:\\Users\\LENOVO\\Google Drive\\Databases\\Hobos_data\\", pattern=".csv", full.names=T)
-names.files <- list.files("C:\\Users\\LENOVO\\Google Drive\\Databases\\Hobos_data\\", pattern=".csv")
+files <- list.files("C:\\Users\\LENOVO\\Google Drive\\Databases\\Hobos_data\\", pattern = ".csv", full.names = T)
+names.files <- list.files("C:\\Users\\LENOVO\\Google Drive\\Databases\\Hobos_data\\", pattern = ".csv")
 
 
-all_data <- lapply(files, fread,select=c(1:5), header = FALSE, skip=1, encoding = "UTF-8", dec=".")
+all_data <- lapply(files, fread,select = c(1:5), header = FALSE, skip = 1, encoding = "UTF-8", dec = ".", sep = ";", fill = F)
 
-for (i in 1:length(all_data)){
-  all_data[[i]]<-cbind(all_data[[i]],names.files[i])}
+for (i in 1:length(all_data)) {
+  all_data[[i]] <- cbind(all_data[[i]],names.files[i])}
 
 
 ## PROCESSING RAW DATA ---------
@@ -35,9 +35,9 @@ setnames(all_data, c("n", "date", "time", "temp","light", "file"))
 
 all_data$DATE <- paste(all_data$date,"_",all_data$time) #this variable will be useful for sort and remove duplicates
 
-all_data$light <- as.numeric(sub(",", "", all_data$light, fixed=TRUE))
-all_data$temp <- as.numeric(sub(",", "", all_data$temp, fixed=TRUE))
-all_data$file <- sub(".csv", "", all_data$file, fixed=TRUE)
+all_data$light <- as.numeric(sub(",", "", all_data$light, fixed = TRUE))
+all_data$temp <- as.numeric(sub(",", "", all_data$temp, fixed = TRUE))
+all_data$file <- sub(".csv", "", all_data$file, fixed = TRUE)
 
 # drop rows with missing data
 all_data <- na.omit(all_data)
@@ -75,12 +75,13 @@ all_data$site <- ifelse(grepl("Quiaios1-",all_data$file),'QUD1',
                                                                                                                                                      ifelse(grepl("20415975_",all_data$file),'SJD_JAEL1', #I'm not sure
                                                                                                                                                             ifelse(grepl("SJacinto1-",all_data$file),'SJD1',
                                                                                                                                                                    ifelse(grepl("SJD1_",all_data$file),'SJD1',
-                                                                                                                                                                          ifelse(grepl("SJD2",all_data$file),'SJD2',
+                                                                                                                                                                          ifelse(grepl("SJD1_SEI1_",all_data$file),'SJD1',
+                                                                                                                                                                              ifelse(grepl("SJD2",all_data$file),'SJD2',
                                                                                                                                                                                  ifelse(grepl("SJD2_",all_data$file),'SJD2',
                                                                                                                                                                                         ifelse(grepl("SJacinto2_",all_data$file),'SJD2',
                                                                                                                                                                                                ifelse(grepl("SEI1_HOBO",all_data$file),'SEI1',
                                                                                                                                                                                                       ifelse(grepl("SEI2_HOBO",all_data$file),'SEI2',
-                                                                                                                                                                                                             ifelse(grepl("Esposende2-",all_data$file),'ESP2',all_data$file))))))))))))))))))))))))))))
+                                                                                                                                                                                                             ifelse(grepl("Esposende2-",all_data$file),'ESP2',all_data$file)))))))))))))))))))))))))))))
 
 
 
@@ -365,24 +366,24 @@ lightplot3
 ## SAVING PROCESSED DATA ------
 # writting data in one big file
 
-write.csv(monthly_means, paste(out_dir, "monthly_means_data.csv", sep="/"), 
+write.csv(monthly_means, paste(out_dir, "monthly_means_data_28092022.csv", sep="/"), 
           row.names=FALSE) # this file is still uncleaned for outliers! be carefull and clean it before analyze it
-write.csv(monthly_range, paste(out_dir, "monthly_range_data.csv", sep="/"), 
+write.csv(monthly_range, paste(out_dir, "monthly_range_data_28092022.csv", sep="/"), 
           row.names=FALSE) # this file is still uncleaned for outliers! be carefull and clean it before analyze it
-write.csv(maxmin_average, paste(out_dir, "monthly_maxmin_data.csv", sep="/"), 
+write.csv(maxmin_average, paste(out_dir, "monthly_maxmin_data_28092022.csv", sep="/"), 
           row.names=FALSE) # this file is still uncleaned for outliers! be carefull and clean it before analyze it
 
 
 # exporting plots
-png("monthly_means.png", width = 800, height = 800)
+png("monthly_means_28092022.png", width = 800, height = 800)
 plot_grid(tempplot, lightplot, labels = c('A', 'B'), label_size = 12, nrow=2)
 dev.off()
 
-png("monthly_average_daily_range.png", width = 800, height = 800)
+png("monthly_average_daily_range_28092022.png", width = 800, height = 800)
 plot_grid(tempplot1, lightplot1, labels = c('A', 'B'), label_size = 12, nrow=2)
 dev.off()
 
-png("monthly_average_maxmin.png", width = 800, height = 800)
+png("monthly_average_maxmin_28092022.png", width = 800, height = 800)
 plot_grid(tempplot2,  tempplot3, lightplot2,lightplot3,  labels = c('A', 'B', 'C', 'D'), label_size = 12, nrow=2)
 dev.off()
 
