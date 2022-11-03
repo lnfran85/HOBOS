@@ -10,7 +10,10 @@ When data is gathered from dataloggers, the exportation of the parsed file must 
  - A column with the row number must be included
  - Date and time must be in two separated columns
  - The time format will be as 24h
- - Include serial number of the datalogger
+ - Include serial number of the datalogger       
+ 
+ ## TO DO
+Liliana suggested to split the data from the HOBOS which have different conditions. This can specially be done in LSA 
 
 
 ## DONE
